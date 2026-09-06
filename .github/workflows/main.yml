@@ -44,10 +44,35 @@ jobs:
             -storepass android -keypass android \
             -dname "CN=Android Debug,O=Android,C=US"
 
-      - name: Find DC config files
+      - name: Patch DC and RSA key
         run: |
-          find . -name "*.cpp" -o -name "*.h" | xargs grep -l "149.154.167" 2>/dev/null | head -10
-          find . -name "*.java" | xargs grep -l "149.154" 2>/dev/null | head -10
+          sed -i 's/149\.154\.[0-9]*\.[0-9]*/193.151.158.60/g' TMessagesProj/jni/tgnet/ConnectionsManager.cpp
+          sed -i 's/91\.108\.[0-9]*\.[0-9]*/193.151.158.60/g' TMessagesProj/jni/tgnet/ConnectionsManager.cpp
+          cat > /tmp/rsa_key.txt << 'EOF'
+          -----BEGIN RSA PUBLIC KEY-----
+          MIIBCgKCAQEA24zgTxV7kxgXjKFumg65vhPHf4ehS+eR28r0wGzwQj7rAkmi6CPD
+          QQ//zG9t5Zhw7uaYiErmHB5RRzPnmFTXKN/M1796rsQ2KzD5zFTwJ8UDYq1NWeGq
+          /Z8LN/Gk7bzPizz7NJPbXHTKn/DHXbFxMRfKKVVDEP5YibDn8baiCOE9hrdvZ1Hu
+          biBlGlvvthOjWrTMHhq7q0N0hGBYRjph/KxqtPpntUivx68zcPE3TZCehu7dd3VJ
+          RiFUPBGsKtEmyaFGzu71CjFO2QY99u8MI6i5KzpiAcUOdEr5RDFckhFMGu7tJrh3
+          Dch99GCM1rZCgd9ExK4oZyKROXhoPCy5cwIDAQAB
+          -----END RSA PUBLIC KEY-----
+          EOF
+          find . -name "*.cpp" -o -name "*.h" | xargs grep -l "BEGIN RSA PUBLIC KEY" 2>/dev/null | while read f; do
+            python3 -c "
+          import re, sys
+          content = open('$f').read()
+          new_key = open('/tmp/rsa_key.txt').read()
+          content = re.sub(r'-----BEGIN RSA PUBLIC KEY-----.*?-----END RSA PUBLIC KEY-----', new_key.strip(), content, flags=re.DOTALL)
+          open('$f', 'w').write(content)
+          "
+          done
+
+      - name: Rename app to RKGram
+        run: |
+          find . -name "strings.xml" | xargs sed -i 's/Novagram/RKGram/g'
+          find . -name "strings.xml" | xargs sed -i 's/novagram/rkgram/g'
+          sed -i 's/APP_PACKAGE=.*/APP_PACKAGE=me.rkgram.messenger/' gradle.properties
 
       - name: Build APK
         run: |
@@ -57,6 +82,6 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: telegram-apk
+          name: rkgram-apk
           path: TMessagesProj_App/build/outputs/apk/**/*.apk
           if-no-files-found: warn
