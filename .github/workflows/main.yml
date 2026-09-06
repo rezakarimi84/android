@@ -21,6 +21,11 @@ jobs:
       - name: Fix gradle properties
         run: sed -i 's/-XX:MaxPermSize=[0-9]*[mMgG]//' gradle.properties
 
+      - name: Create API keys
+        run: |
+          echo "APP_ID=4" > API_KEYS
+          echo "APP_HASH=014b35b6184100b085b0d0572f9b5103" >> API_KEYS
+
       - name: Build APK
         run: |
           chmod +x gradlew
