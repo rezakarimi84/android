@@ -18,6 +18,9 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Fix gradle properties
+        run: sed -i 's/-XX:MaxPermSize=[0-9]*[mMgG]//' gradle.properties
+
       - name: Build APK
         run: |
           chmod +x gradlew
