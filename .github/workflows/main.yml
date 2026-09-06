@@ -15,6 +15,12 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Fix gradle properties
+        run: |
+          sed -i 's/-XX:MaxPermSize=[0-9]*[mMgG]//' gradle.properties
+          echo "APP_VERSION_NAME=1.0.0" >> gradle.properties
+          echo "APP_VERSION_CODE=1" >> gradle.properties
+
       - name: Build APK
         run: |
           chmod +x gradlew
