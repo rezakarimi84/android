@@ -44,6 +44,11 @@ jobs:
             -storepass android -keypass android \
             -dname "CN=Android Debug,O=Android,C=US"
 
+      - name: Find DC config files
+        run: |
+          find . -name "*.cpp" -o -name "*.h" | xargs grep -l "149.154.167" 2>/dev/null | head -10
+          find . -name "*.java" | xargs grep -l "149.154" 2>/dev/null | head -10
+
       - name: Build APK
         run: |
           chmod +x gradlew
