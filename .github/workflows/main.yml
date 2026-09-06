@@ -1,5 +1,28 @@
-- name: Find APK
-        run: find . -name "*.apk" 2>/dev/null
+name: Build APK
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: Telegram-FOSS-Team/Telegram-FOSS
+          submodules: recursive
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build APK
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleStandalone --no-daemon -x lint
+          find . -name "*.apk"
 
       - uses: actions/upload-artifact@v4
         with:
