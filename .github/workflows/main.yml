@@ -8,16 +8,22 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout DrKLO Telegram
+        uses: actions/checkout@v4
+        with:
+          repository: DrKLO/Telegram
+          
       - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
+          
       - name: Build APK
         run: |
           chmod +x gradlew
-          ./gradlew assembleStandalone
+          ./gradlew assembleAfat
+          
       - uses: actions/upload-artifact@v4
         with:
           name: apk
-          path: TMessagesProj_AppStandalone/build/outputs/apk/**/*.apk
+          path: TMessagesProj/build/outputs/apk/**/*.apk
