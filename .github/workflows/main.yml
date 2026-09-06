@@ -22,10 +22,10 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew assembleStandalone --no-daemon -x lint
-          find . -name "*.apk" -type f
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: apk
-          path: "**/*.apk"
+          name: telegram-apk
+          path: TMessagesProj/build/outputs/apk/
+          if-no-files-found: warn
