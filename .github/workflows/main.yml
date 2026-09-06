@@ -1,38 +1,7 @@
-name: Build APK
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout DrKLO Telegram
-        uses: actions/checkout@v4
-        with:
-          repository: DrKLO/Telegram
-
-      - uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Create dummy google-services.json
-        run: |
-          cat > TMessagesProj/google-services.json << 'EOF'
-          {
-            "project_info": {"project_id": "test"},
-            "client": [{"client_info": {"mobilesdk_app_id": "1:1:android:1"}, "api_key": [{"current_key": "test"}]}]
-          }
-          EOF
-
-      - name: Build APK
-        run: |
-          chmod +x gradlew
-          ./gradlew tasks --no-daemon | grep assemble
+- name: Find APK
+        run: find . -name "*.apk" 2>/dev/null
 
       - uses: actions/upload-artifact@v4
         with:
           name: apk
-          path: TMessagesProj_AppStandalone/build/outputs/apk/**/*.apk
+          path: "**/*.apk"
