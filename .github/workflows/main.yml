@@ -9,39 +9,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          repository: Telegram-FOSS-Team/Telegram-FOSS
-          submodules: recursive
 
       - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install NDK
-        run: |
-          echo "y" | sdkmanager "ndk;21.4.7075529"
-          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.4.7075529" >> $GITHUB_ENV
-
-      - name: Fix gradle properties
-        run: sed -i 's/-XX:MaxPermSize=[0-9]*[mMgG]//' gradle.properties
-
-      - name: Create API keys
-        run: |
-          echo "APP_ID=4" > API_KEYS
-          echo "APP_HASH=014b35b6184100b085b0d0572f9b5103" >> API_KEYS
-
       - name: Build APK
         run: |
           chmod +x gradlew
           ./gradlew assembleStandalone --no-daemon -x lint
 
-      - name: Upload APK
+      - name: Find and Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: telegram-apk
-          path: TMessagesProj/build/outputs/apk/
+          path: |
+            TMessagesProj_AppStandalone/build/outputs/apk/**/*.apk
           if-no-files-found: warn
