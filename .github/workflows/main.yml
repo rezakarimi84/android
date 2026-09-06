@@ -21,10 +21,16 @@ jobs:
           cp local.properties.example local.properties
           echo "TELEGRAM_APP_ID=4" >> local.properties
           echo "TELEGRAM_APP_HASH=014b35b6184100b085b0d0572f9b5103" >> local.properties
-          cat > TMessagesProj/google-services.json << 'EOF'
+          cat > /tmp/google-services.json << 'EOF'
           {"project_info":{"project_id":"test","project_number":"1","firebase_url":"https://test.firebaseio.com","storage_bucket":"test.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:1:android:abc","android_client_info":{"package_name":"uz.codingtech.messengerapp"}},"api_key":[{"current_key":"test"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}
           EOF
-          cp TMessagesProj/google-services.json TMessagesProj_AppStandalone/google-services.json
+          cp /tmp/google-services.json TMessagesProj/google-services.json
+          cp /tmp/google-services.json TMessagesProj_App/google-services.json
+          cp /tmp/google-services.json TMessagesProj_AppStandalone/google-services.json
+
+      - name: Enable buildConfig
+        run: |
+          sed -i '/android {/a\    buildFeatures { buildConfig true }' TMessagesProj/build.gradle
 
       - name: Build APK
         run: |
