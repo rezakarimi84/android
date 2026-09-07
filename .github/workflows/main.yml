@@ -64,6 +64,12 @@ jobs:
         run: |
           grep -r "MIIBCgKCAQEA" . --include="*.cpp" --include="*.h" --include="*.java" --include="*.kt" -l 2>/dev/null || echo "Not found"
 
+      - name: Replace RSA Key
+        run: |
+          sed -i 's|MIIBCgKCAQEA[A-Za-z0-9+/=]*|MIIBCgKCAQEA24zgTxV7kxgXjKFumg65vhPHf4ehS+eR28r0wGzwQj7rAkmi6CPDQQ//zG9t5Zhw7uaYiErmHB5RRzPnmFTXKN/M1796rsQ2KzD5zFTwJ8UDYq1NWeGq/Z8LN/Gk7bzPizz7NJPbXHTKn/DHXbFxMRfKKVVDEP5YibDn8baiCOE9hrdvZ1HubiBlGlvvthOjWrTMHhq7q0N0hGBYRjph/KxqtPpntUivx68zcPE3TZCehu7dd3VJRiFUPBGsKtEmyaFGzu71CjFO2QY99u8MI6i5KzpiAcUOdEr5RDFckhFMGu7tJrh3Dch99GCM1rZCgd9ExK4oZyKROXhoPCy5cwIDAQAB|g' \
+            TMessagesProj/jni/tgnet/Handshake.cpp \
+            TMessagesProj/jni/tgnet/Datacenter.cpp
+
       - name: Rename to RKGram
         run: |
           find . -name "strings.xml" | xargs sed -i 's/Novagram/RKGram/g'
