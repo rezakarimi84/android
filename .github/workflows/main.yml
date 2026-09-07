@@ -19,25 +19,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup config files
-        run: |
-          cat > TMessagesProj/google-services.json << 'EOF'
-          {"project_info":{"project_id":"rkgram","project_number":"1","firebase_url":"https://rkgram.firebaseio.com","storage_bucket":"rkgram.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:1:android:abc","android_client_info":{"package_name":"me.rkgram.messenger"}},"api_key":[{"current_key":"test"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}},{"client_info":{"mobilesdk_app_id":"1:1:android:def","android_client_info":{"package_name":"me.rkgram.messenger.beta"}},"api_key":[{"current_key":"test"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}
-          EOF
-          cat > TMessagesProj/config/gradle.properties << 'EOF'
-          RELEASE_KEY_PASSWORD=android
-          RELEASE_KEY_ALIAS=androiddebugkey
-          RELEASE_STORE_PASSWORD=android
-          EOF
-
-      - name: Create keystore
-        run: |
-          keytool -genkey -v -keystore TMessagesProj/config/release.keystore \
-            -alias androiddebugkey \
-            -keyalg RSA -keysize 2048 -validity 10000 \
-            -storepass android -keypass android \
-            -dname "CN=RKGram,O=RK,C=IR"
-
       - name: Set API credentials
         run: |
           sed -i 's/int APP_ID = [0-9]*/int APP_ID = 33758413/' TMessagesProj/src/main/java/org/telegram/messenger/BuildVars.java
@@ -50,13 +31,12 @@ jobs:
 
       - name: Rename to RKGram
         run: |
-          find . -name "strings.xml" | xargs sed -i 's/Telegram/RKGram/g'
-          sed -i 's/org\.telegram\.messenger/me.rkgram.messenger/g' TMessagesProj/build.gradle
+          find . -name "strings.xml" | xargs sed -i 's/>Telegram</>RKGram</g'
 
       - name: Build APK
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon -x lint
+          ./gradlew assembleAfat --no-daemon -x lint
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
