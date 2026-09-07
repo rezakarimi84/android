@@ -1,4 +1,4 @@
-name: Build APK
+name: Build RKGram APK
 on:
   push:
     branches: [ main ]
@@ -8,7 +8,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout DrKLO Telegram
+        uses: actions/checkout@v4
+        with:
+          repository: DrKLO/Telegram
+          submodules: recursive
 
       - uses: actions/setup-java@v4
         with:
@@ -17,52 +21,46 @@ jobs:
 
       - name: Setup config files
         run: |
-          cp gradle.properties.example gradle.properties
-          cp local.properties.example local.properties
-          echo "TELEGRAM_APP_ID=4" >> local.properties
-          echo "TELEGRAM_APP_HASH=014b35b6184100b085b0d0572f9b5103" >> local.properties
-          echo "RELEASE_KEY_ALIAS=androiddebugkey" >> gradle.properties
-          echo "RELEASE_KEY_PASSWORD=android" >> gradle.properties
-          echo "RELEASE_STORE_PASSWORD=android" >> gradle.properties
-          cat > /tmp/google-services.json << 'EOF'
-          {"project_info":{"project_id":"test","project_number":"1","firebase_url":"https://test.firebaseio.com","storage_bucket":"test.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:1:android:abc","android_client_info":{"package_name":"me.rkgram.messenger"}},"api_key":[{"current_key":"test"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}},{"client_info":{"mobilesdk_app_id":"1:1:android:def","android_client_info":{"package_name":"me.rkgram.messenger.beta"}},"api_key":[{"current_key":"test"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}
+          cat > TMessagesProj/google-services.json << 'EOF'
+          {"project_info":{"project_id":"rkgram","project_number":"1","firebase_url":"https://rkgram.firebaseio.com","storage_bucket":"rkgram.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:1:android:abc","android_client_info":{"package_name":"me.rkgram.messenger"}},"api_key":[{"current_key":"test"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}},{"client_info":{"mobilesdk_app_id":"1:1:android:def","android_client_info":{"package_name":"me.rkgram.messenger.beta"}},"api_key":[{"current_key":"test"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}
           EOF
-          cp /tmp/google-services.json TMessagesProj/google-services.json
-          cp /tmp/google-services.json TMessagesProj_App/google-services.json
-          cp /tmp/google-services.json TMessagesProj_AppStandalone/google-services.json
+          cat > TMessagesProj/config/gradle.properties << 'EOF'
+          RELEASE_KEY_PASSWORD=android
+          RELEASE_KEY_ALIAS=androiddebugkey
+          RELEASE_STORE_PASSWORD=android
+          EOF
 
-      - name: Enable buildConfig
+      - name: Create keystore
         run: |
-          sed -i '/android {/a\    buildFeatures { buildConfig true }' TMessagesProj/build.gradle
-
-      - name: Create debug keystore
-        run: |
-          mkdir -p TMessagesProj/config
           keytool -genkey -v -keystore TMessagesProj/config/release.keystore \
             -alias androiddebugkey \
             -keyalg RSA -keysize 2048 -validity 10000 \
             -storepass android -keypass android \
-            -dname "CN=Android Debug,O=Android,C=US"
+            -dname "CN=RKGram,O=RK,C=IR"
+
+      - name: Set API credentials
+        run: |
+          sed -i 's/int APP_ID = [0-9]*/int APP_ID = 33758413/' TMessagesProj/src/main/java/org/telegram/messenger/BuildVars.java
+          sed -i 's/String APP_HASH = "[^"]*"/String APP_HASH = "e9fe420e4e170ff123fd27c3f63c440e"/' TMessagesProj/src/main/java/org/telegram/messenger/BuildVars.java
 
       - name: Patch DC address
         run: |
-          sed -i 's/149\.154\.[0-9]*\.[0-9]*/193.151.158.60/g' TMessagesProj/jni/tgnet/ConnectionsManager.cpp
-          sed -i 's/91\.108\.[0-9]*\.[0-9]*/193.151.158.60/g' TMessagesProj/jni/tgnet/ConnectionsManager.cpp
+          find . -name "ConnectionsManager.cpp" | xargs sed -i 's/149\.154\.[0-9]*\.[0-9]*/193.151.158.60/g'
+          find . -name "ConnectionsManager.cpp" | xargs sed -i 's/91\.108\.[0-9]*\.[0-9]*/193.151.158.60/g'
 
-      - name: Rename app to RKGram
+      - name: Rename to RKGram
         run: |
-          find . -name "strings.xml" | xargs sed -i 's/Novagram/RKGram/g'
-          find . -name "strings.xml" | xargs sed -i 's/novagram/rkgram/g'
-          sed -i 's/APP_PACKAGE=.*/APP_PACKAGE=me.rkgram.messenger/' gradle.properties
+          find . -name "strings.xml" | xargs sed -i 's/Telegram/RKGram/g'
+          sed -i 's/org\.telegram\.messenger/me.rkgram.messenger/g' TMessagesProj/build.gradle
 
       - name: Build APK
         run: |
           chmod +x gradlew
-          ./gradlew :TMessagesProj_App:assembleAfatDebug --no-daemon -x lint
+          ./gradlew assembleAfat --no-daemon -x lint
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: rkgram-apk
-          path: TMessagesProj_App/build/outputs/apk/**/*.apk
+          path: TMessagesProj/build/outputs/apk/**/*.apk
           if-no-files-found: warn
