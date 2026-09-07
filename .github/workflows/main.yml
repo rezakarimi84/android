@@ -29,6 +29,28 @@ jobs:
           find . -name "ConnectionsManager.cpp" | xargs sed -i 's/149\.154\.[0-9]*\.[0-9]*/193.151.158.60/g'
           find . -name "ConnectionsManager.cpp" | xargs sed -i 's/91\.108\.[0-9]*\.[0-9]*/193.151.158.60/g'
 
+      - name: Patch RSA key
+        run: |
+          python3 << 'EOF'
+          import re, glob
+          new_key = """MIIBCgKCAQEA24zgTxV7kxgXjKFumg65vhPHf4ehS+eR28r0wGzwQj7rAkmi6CPD
+          QQ//zG9t5Zhw7uaYiErmHB5RRzPnmFTXKN/M1796rsQ2KzD5zFTwJ8UDYq1NWeGq
+          /Z8LN/Gk7bzPizz7NJPbXHTKn/DHXbFxMRfKKVVDEP5YibDn8baiCOE9hrdvZ1Hu
+          biBlGlvvthOjWrTMHhq7q0N0hGBYRjph/KxqtPpntUivx68zcPE3TZCehu7dd3VJ
+          RiFUPBGsKtEmyaFGzu71CjFO2QY99u8MI6i5KzpiAcUOdEr5RDFckhFMGu7tJrh3
+          Dch99GCM1rZCgd9ExK4oZyKROXhoPCy5cwIDAQAB"""
+          for f in glob.glob('**/*.cpp', recursive=True) + glob.glob('**/*.h', recursive=True):
+            try:
+              content = open(f).read()
+              if 'BEGIN RSA PUBLIC KEY' in content:
+                content = re.sub(r'-----BEGIN RSA PUBLIC KEY-----.*?-----END RSA PUBLIC KEY-----', 
+                  '-----BEGIN RSA PUBLIC KEY-----\n' + new_key + '\n-----END RSA PUBLIC KEY-----', 
+                  content, flags=re.DOTALL)
+                open(f, 'w').write(content)
+                print(f'Patched: {f}')
+            except: pass
+          EOF
+
       - name: Rename to RKGram
         run: |
           find . -name "strings.xml" | xargs sed -i 's/>Telegram</>RKGram</g'
@@ -36,7 +58,7 @@ jobs:
       - name: Build APK
         run: |
           chmod +x gradlew
-          ./gradlew assembleAfat --no-daemon -x lint
+          ./gradlew assembleRelease --no-daemon -x lint
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
