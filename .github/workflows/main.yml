@@ -19,19 +19,37 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Set API credentials
+      - name: Create API keys file
         run: |
-          sed -i 's/int APP_ID = [0-9]*/int APP_ID = 33758413/' TMessagesProj/src/main/java/org/telegram/messenger/BuildVars.java
-          sed -i 's/String APP_HASH = "[^"]*"/String APP_HASH = "e9fe420e4e170ff123fd27c3f63c440e"/' TMessagesProj/src/main/java/org/telegram/messenger/BuildVars.java
+          echo "APP_ID=33758413" > API_KEYS
+          echo "APP_HASH=e9fe420e4e170ff123fd27c3f63c440e" >> API_KEYS
+
+      - name: Fix gradle properties
+        run: |
+          sed -i 's/-XX:MaxPermSize=[0-9]*[mMgG]//' gradle.properties
+
+      - name: Create keystore
+        run: |
+          mkdir -p TMessagesProj/config
+          keytool -genkey -v -keystore TMessagesProj/config/release.keystore \
+            -alias androiddebugkey \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass android -keypass android \
+            -dname "CN=RKGram,O=RK,C=IR"
+          echo "RELEASE_KEY_PASSWORD=android" >> gradle.properties
+          echo "RELEASE_KEY_ALIAS=androiddebugkey" >> gradle.properties
+          echo "RELEASE_STORE_PASSWORD=android" >> gradle.properties
+
+      - name: Create google-services.json
+        run: |
+          cat > TMessagesProj/google-services.json << 'EOF'
+          {"project_info":{"project_id":"rkgram","project_number":"1","firebase_url":"https://rkgram.firebaseio.com","storage_bucket":"rkgram.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:1:android:abc","android_client_info":{"package_name":"org.telegram.messenger"}},"api_key":[{"current_key":"test"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}},{"client_info":{"mobilesdk_app_id":"1:1:android:def","android_client_info":{"package_name":"org.telegram.messenger.beta"}},"api_key":[{"current_key":"test"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}
+          EOF
 
       - name: Patch DC address
         run: |
           find . -name "ConnectionsManager.cpp" | xargs sed -i 's/149\.154\.[0-9]*\.[0-9]*/193.151.158.60/g'
           find . -name "ConnectionsManager.cpp" | xargs sed -i 's/91\.108\.[0-9]*\.[0-9]*/193.151.158.60/g'
-
-      - name: Fix gradle properties
-        run: |
-          sed -i 's/-XX:MaxPermSize=[0-9]*[mMgG]//' gradle.properties
 
       - name: Rename to RKGram
         run: |
