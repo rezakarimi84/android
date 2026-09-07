@@ -15,6 +15,17 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Cache NDK build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            TMessagesProj/.cxx
+          key: ${{ runner.os }}-ndk-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-ndk-
+
       - name: Setup config files
         run: |
           cp gradle.properties.example gradle.properties
@@ -48,6 +59,10 @@ jobs:
         run: |
           find . -name "ConnectionsManager.cpp" | xargs sed -i 's/149\.154\.[0-9]*\.[0-9]*/193.151.158.60/g'
           find . -name "ConnectionsManager.cpp" | xargs sed -i 's/91\.108\.[0-9]*\.[0-9]*/193.151.158.60/g'
+
+      - name: Find RSA key location
+        run: |
+          grep -r "MIIBCgKCAQEA" . --include="*.cpp" --include="*.h" --include="*.java" --include="*.kt" -l 2>/dev/null || echo "Not found"
 
       - name: Rename to RKGram
         run: |
