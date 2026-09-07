@@ -57,10 +57,12 @@ jobs:
 
       - name: Patch DC address
         run: |
-          find . -name "ConnectionsManager.cpp" | xargs sed -i 's/149\.154\.[0-9]*\.[0-9]*/193.151.158.60/g'
-          find . -name "ConnectionsManager.cpp" | xargs sed -i 's/91\.108\.[0-9]*\.[0-9]*/193.151.158.60/g'
-          find . -name "ConnectionsManager.cpp" | xargs sed -i 's/:443/:2398/g'
-          find . -name "Datacenter.cpp" | xargs sed -i 's/:443/:2398/g'
+          find . -name "ConnectionsManager.cpp" -exec sed -i 's/149\.154\.[0-9]*\.[0-9]*/193.151.158.60/g' {} \;
+          find . -name "ConnectionsManager.cpp" -exec sed -i 's/91\.108\.[0-9]*\.[0-9]*/193.151.158.60/g' {} \;
+          find . -name "Datacenter.cpp" -exec sed -i 's/149\.154\.[0-9]*\.[0-9]*/193.151.158.60/g' {} \;
+          find . -name "Datacenter.cpp" -exec sed -i 's/91\.108\.[0-9]*\.[0-9]*/193.151.158.60/g' {} \;
+          echo "=== Patched files ==="
+          grep -r "193.151.158.60" . --include="*.cpp" -l
 
       - name: Find RSA key location
         run: |
