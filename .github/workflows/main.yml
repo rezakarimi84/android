@@ -8,10 +8,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout DrKLO Telegram
+      - name: Checkout Telegram-FOSS
         uses: actions/checkout@v4
         with:
-          repository: DrKLO/Telegram
+          repository: Telegram-FOSS-Team/Telegram-FOSS
           submodules: recursive
 
       - uses: actions/setup-java@v4
@@ -29,18 +29,18 @@ jobs:
           find . -name "ConnectionsManager.cpp" | xargs sed -i 's/149\.154\.[0-9]*\.[0-9]*/193.151.158.60/g'
           find . -name "ConnectionsManager.cpp" | xargs sed -i 's/91\.108\.[0-9]*\.[0-9]*/193.151.158.60/g'
 
+      - name: Fix gradle properties
+        run: |
+          sed -i 's/-XX:MaxPermSize=[0-9]*[mMgG]//' gradle.properties
+
       - name: Rename to RKGram
         run: |
           find . -name "strings.xml" | xargs sed -i 's/>Telegram</>RKGram</g'
 
-      - name: Fix Gradle wrapper
-        run: |
-          sed -i 's|distributionUrl=.*|distributionUrl=https\\://services.gradle.org/distributions/gradle-8.9-bin.zip|' gradle/wrapper/gradle-wrapper.properties
-
       - name: Build APK
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon -x lint
+          ./gradlew assembleAfatRelease --no-daemon -x lint
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
