@@ -74,9 +74,27 @@ jobs:
 
       - name: Replace RSA Key
         run: |
-          sed -i 's|MIIBCgKCAQEA[A-Za-z0-9+/=]*|MIIBCgKCAQEA24zgTxV7kxgXjKFumg65vhPHf4ehS+eR28r0wGzwQj7rAkmi6CPDQQ//zG9t5Zhw7uaYiErmHB5RRzPnmFTXKN/M1796rsQ2KzD5zFTwJ8UDYq1NWeGq/Z8LN/Gk7bzPizz7NJPbXHTKn/DHXbFxMRfKKVVDEP5YibDn8baiCOE9hrdvZ1HubiBlGlvvthOjWrTMHhq7q0N0hGBYRjph/KxqtPpntUivx68zcPE3TZCehu7dd3VJRiFUPBGsKtEmyaFGzu71CjFO2QY99u8MI6i5KzpiAcUOdEr5RDFckhFMGu7tJrh3Dch99GCM1rZCgd9ExK4oZyKROXhoPCy5cwIDAQAB|g' \
-            TMessagesProj/jni/tgnet/Handshake.cpp \
-            TMessagesProj/jni/tgnet/Datacenter.cpp
+          python3 - << 'EOF'
+          import re
+
+          new_key = "MIIBCgKCAQEA24zgTxV7kxgXjKFumg65vhPHf4ehS+eR28r0wGzwQj7rAkmi6CPDQQ//zG9t5Zhw7uaYiErmHB5RRzPnmFTXKN/M1796rsQ2KzD5zFTwJ8UDYq1NWeGq/Z8LN/Gk7bzPizz7NJPbXHTKn/DHXbFxMRfKKVVDEP5YibDn8baiCOE9hrdvZ1HubiBlGlvvthOjWrTMHhq7q0N0hGBYRjph/KxqtPpntUivx68zcPE3TZCehu7dd3VJRiFUPBGsKtEmyaFGzu71CjFO2QY99u8MI6i5KzpiAcUOdEr5RDFckhFMGu7tJrh3Dch99GCM1rZCgd9ExK4oZyKROXhoPCy5cwIDAQAB"
+
+          files = [
+              "TMessagesProj/jni/tgnet/Handshake.cpp",
+              "TMessagesProj/jni/tgnet/Datacenter.cpp"
+          ]
+
+          for f in files:
+              with open(f, 'r') as file:
+                  content = file.read()
+              new_content = re.sub(r'MIIBCgKCAQEA[A-Za-z0-9+/=]+', new_key, content)
+              with open(f, 'w') as file:
+                  file.write(new_content)
+              if new_key in new_content:
+                  print(f"✅ Key replaced in: {f}")
+              else:
+                  print(f"❌ Key NOT replaced in: {f}")
+          EOF
 
       - name: Rename to RKGram
         run: |
