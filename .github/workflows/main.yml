@@ -96,6 +96,13 @@ jobs:
                   print(f"❌ Key NOT replaced in: {f}")
           EOF
 
+      - name: Verify RSA Key
+        run: |
+          echo "=== Handshake.cpp key ==="
+          grep -o "MIIBCgKCAQEA[A-Za-z0-9+/=]*" TMessagesProj/jni/tgnet/Handshake.cpp | head -1
+          echo "=== Datacenter.cpp key ==="
+          grep -o "MIIBCgKCAQEA[A-Za-z0-9+/=]*" TMessagesProj/jni/tgnet/Datacenter.cpp | head -1
+
       - name: Rename to RKGram
         run: |
           find . -name "strings.xml" | xargs sed -i 's/Novagram/RKGram/g'
