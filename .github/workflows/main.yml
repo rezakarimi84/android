@@ -94,15 +94,15 @@ jobs:
 
       - name: Fix RSA Fingerprint
         run: |
-          sed -i 's/0x875f17fdf8a2205d/0x39e297c3171a9846/g' TMessagesProj/jni/tgnet/Handshake.cpp
-          sed -i 's/0x875f17fdf8a2205d/0x39e297c3171a9846/g' TMessagesProj/jni/tgnet/Datacenter.cpp
-          sed -i 's/0xd09d1d85de64fd85/0x39e297c3171a9846/g' TMessagesProj/jni/tgnet/Handshake.cpp
-          sed -i 's/0xd09d1d85de64fd85/0x39e297c3171a9846/g' TMessagesProj/jni/tgnet/Datacenter.cpp
-          sed -i 's/0xb25898df208d2603/0x39e297c3171a9846/g' TMessagesProj/jni/tgnet/Handshake.cpp
-          sed -i 's/0xb25898df208d2603/0x39e297c3171a9846/g' TMessagesProj/jni/tgnet/Datacenter.cpp
+          sed -i 's/0x875f17fdf8a2205d/0xa15fc6dd01ef6c6f/g' TMessagesProj/jni/tgnet/Handshake.cpp
+          sed -i 's/0x875f17fdf8a2205d/0xa15fc6dd01ef6c6f/g' TMessagesProj/jni/tgnet/Datacenter.cpp
+          sed -i 's/0xd09d1d85de64fd85/0xa15fc6dd01ef6c6f/g' TMessagesProj/jni/tgnet/Handshake.cpp
+          sed -i 's/0xd09d1d85de64fd85/0xa15fc6dd01ef6c6f/g' TMessagesProj/jni/tgnet/Datacenter.cpp
+          sed -i 's/0xb25898df208d2603/0xa15fc6dd01ef6c6f/g' TMessagesProj/jni/tgnet/Handshake.cpp
+          sed -i 's/0xb25898df208d2603/0xa15fc6dd01ef6c6f/g' TMessagesProj/jni/tgnet/Datacenter.cpp
           echo "=== Fingerprint check ==="
-          grep "0x39e297c3171a9846" TMessagesProj/jni/tgnet/Handshake.cpp || echo "Not found in Handshake.cpp"
-          grep "0x39e297c3171a9846" TMessagesProj/jni/tgnet/Datacenter.cpp || echo "Not found in Datacenter.cpp"
+          grep "0xa15fc6dd01ef6c6f" TMessagesProj/jni/tgnet/Handshake.cpp || echo "Not found in Handshake.cpp"
+          grep "0xa15fc6dd01ef6c6f" TMessagesProj/jni/tgnet/Datacenter.cpp || echo "Not found in Datacenter.cpp"
 
       - name: Verify RSA Key
         run: |
