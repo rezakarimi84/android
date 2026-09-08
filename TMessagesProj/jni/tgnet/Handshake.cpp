@@ -372,7 +372,7 @@ void Handshake::processHandshakeResponse_resPQ(TLObject *message, int64_t messag
                                                   "-----END RSA PUBLIC KEY-----");
                     serverPublicKeysFingerprints.push_back(0x875f17fdf8a2205d);
         }
-                }
+                
             }
 
             size_t count2 = serverPublicKeysFingerprints.size();
