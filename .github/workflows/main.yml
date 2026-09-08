@@ -61,6 +61,43 @@ jobs:
           find . -name "ConnectionsManager.cpp" -exec sed -i 's/91\.108\.[0-9]*\.[0-9]*/193.151.158.60/g' {} \;
           find . -name "Datacenter.cpp" -exec sed -i 's/149\.154\.[0-9]*\.[0-9]*/193.151.158.60/g' {} \;
           find . -name "Datacenter.cpp" -exec sed -i 's/91\.108\.[0-9]*\.[0-9]*/193.151.158.60/g' {} \;
+          echo "=== Patched files ==="
+          grep -r "193.151.158.60" . --include="*.cpp" -l
+
+      - name: Find RSA key location
+        run: |
+          grep -r "MIIBCgKCAQEA" . --include="*.cpp" --include="*.h" --include="*.java" --include="*.kt" -l 2>/dev/null || echo "Not found"
+
+      - name: Replace RSA Key
+        run: |
+          python3 - << 'EOF'
+          import re
+
+          new_key = "MIIBCgKCAQEA24zgTxV7kxgXjKFumg65vhPHf4ehS+eR28r0wGzwQj7rAkmi6CPDQQ//zG9t5Zhw7uaYiErmHB5RRzPnmFTXKN/M1796rsQ2KzD5zFTwJ8UDYq1NWeGq/Z8LN/Gk7bzPizz7NJPbXHTKn/DHXbFxMRfKKVVDEP5YibDn8baiCOE9hrdvZ1HubiBlGlvvthOjWrTMHhq7q0N0hGBYRjph/KxqtPpntUivx68zcPE3TZCehu7dd3VJRiFUPBGsKtEmyaFGzu71CjFO2QY99u8MI6i5KzpiAcUOdEr5RDFckhFMGu7tJrh3Dch99GCM1rZCgd9ExK4oZyKROXhoPCy5cwIDAQAB"
+
+          files = [
+              "TMessagesProj/jni/tgnet/Handshake.cpp",
+              "TMessagesProj/jni/tgnet/Datacenter.cpp"
+          ]
+
+          for f in files:
+              with open(f, 'r') as file:
+                  content = file.read()
+              new_content = re.sub(r'MIIBCgKCAQEA[A-Za-z0-9+/=]+', new_key, content)
+              with open(f, 'w') as file:
+                  file.write(new_content)
+              if new_key in new_content:
+                  print(f"✅ Key replaced in: {f}")
+              else:
+                  print(f"❌ Key NOT replaced in: {f}")
+          EOF
+
+      - name: Verify RSA Key
+        run: |
+          echo "=== Handshake.cpp key ==="
+          grep -o "MIIBCgKCAQEA[A-Za-z0-9+/=]*" TMessagesProj/jni/tgnet/Handshake.cpp | head -1
+          echo "=== Datacenter.cpp key ==="
+          grep -o "MIIBCgKCAQEA[A-Za-z0-9+/=]*" TMessagesProj/jni/tgnet/Datacenter.cpp | head -1
 
       - name: Rename to RKGram
         run: |
@@ -69,14 +106,10 @@ jobs:
           find . -name "*.kt" -o -name "*.java" | xargs grep -l "Novagram" 2>/dev/null | xargs sed -i 's/Novagram/RKGram/g' 2>/dev/null || true
           sed -i 's/APP_PACKAGE=.*/APP_PACKAGE=me.rkgram.messenger/' gradle.properties
 
-      - name: Clear NDK cache
-        run: |
-          rm -rf TMessagesProj/.cxx
-
       - name: Build APK
         run: |
           chmod +x gradlew
-          ./gradlew :TMessagesProj_App:assembleAfatDebug --no-daemon -x lint
+          ./gradlew :TMessagesProj_App:assembleAfatDebug --no-daemon -x lint --stacktrace 2>&1 | tail -80
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
