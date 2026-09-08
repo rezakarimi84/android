@@ -63,21 +63,22 @@ jobs:
           find . -name "Datacenter.cpp" -exec sed -i 's/91\.108\.[0-9]*\.[0-9]*/193.151.158.60/g' {} \;
           find . -name "ConnectionsManager.cpp" -exec sed -i 's/443/2398/g' {} \;
           find . -name "Datacenter.cpp" -exec sed -i 's/443/2398/g' {} \;
-          echo "=== Patched files ==="
-          grep -r "193.151.158.60" . --include="*.cpp" -l
-          echo "=== Port check ==="
-          grep -r "2398" . --include="*.cpp" -l
-
-      - name: Find RSA key location
-        run: |
-          grep -r "MIIBCgKCAQEA" . --include="*.cpp" --include="*.h" --include="*.java" --include="*.kt" -l 2>/dev/null || echo "Not found"
 
       - name: Replace RSA Key
         run: |
           python3 - << 'EOF'
           import re
 
-          new_key = "MIIBCgKCAQEA24zgTxV7kxgXjKFumg65vhPHf4ehS+eR28r0wGzwQj7rAkmi6CPDQQ//zG9t5Zhw7uaYiErmHB5RRzPnmFTXKN/M1796rsQ2KzD5zFTwJ8UDYq1NWeGq/Z8LN/Gk7bzPizz7NJPbXHTKn/DHXbFxMRfKKVVDEP5YibDn8baiCOE9hrdvZ1HubiBlGlvvthOjWrTMHhq7q0N0hGBYRjph/KxqtPpntUivx68zcPE3TZCehu7dd3VJRiFUPBGsKtEmyaFGzu71CjFO2QY99u8MI6i5KzpiAcUOdEr5RDFckhFMGu7tJrh3Dch99GCM1rZCgd9ExK4oZyKROXhoPCy5cwIDAQAB"
+          new_key_formatted = (
+              '"-----BEGIN RSA PUBLIC KEY-----\\n"\n'
+              '                                                  "MIIBCgKCAQEA24zgTxV7kxgXjKFumg65vhPHf4ehS+eR28r0wGzwQj7rAkmi6CPD\\n"\n'
+              '                                                  "QQ//zG9t5Zhw7uaYiErmHB5RRzPnmFTXKN/M1796rsQ2KzD5zFTwJ8UDYq1NWeGq\\n"\n'
+              '                                                  "/Z8LN/Gk7bzPizz7NJPbXHTKn/DHXbFxMRfKKVVDEP5YibDn8baiCOE9hrdvZ1Hu\\n"\n'
+              '                                                  "biBlGlvvthOjWrTMHhq7q0N0hGBYRjph/KxqtPpntUivx68zcPE3TZCehu7dd3VJ\\n"\n'
+              '                                                  "RiFUPBGsKtEmyaFGzu71CjFO2QY99u8MI6i5KzpiAcUOdEr5RDFckhFMGu7tJrh3\\n"\n'
+              '                                                  "Dch99GCM1rZCgd9ExK4oZyKROXhoPCy5cwIDAQAB\\n"\n'
+              '                                                  "-----END RSA PUBLIC KEY-----"'
+          )
 
           files = [
               "TMessagesProj/jni/tgnet/Handshake.cpp",
@@ -87,21 +88,16 @@ jobs:
           for f in files:
               with open(f, 'r') as file:
                   content = file.read()
-              new_content = re.sub(r'MIIBCgKCAQEA[A-Za-z0-9+/=]+', new_key, content)
+              new_content = re.sub(
+                  r'"-----BEGIN RSA PUBLIC KEY-----\\n".*?"-----END RSA PUBLIC KEY-----"',
+                  new_key_formatted,
+                  content,
+                  flags=re.DOTALL
+              )
               with open(f, 'w') as file:
                   file.write(new_content)
-              if new_key in new_content:
-                  print(f"✅ Key replaced in: {f}")
-              else:
-                  print(f"❌ Key NOT replaced in: {f}")
+              print(f"✅ Key replaced in: {f}")
           EOF
-
-      - name: Verify RSA Key
-        run: |
-          echo "=== Handshake.cpp key ==="
-          grep -o "MIIBCgKCAQEA[A-Za-z0-9+/=]*" TMessagesProj/jni/tgnet/Handshake.cpp | head -1
-          echo "=== Datacenter.cpp key ==="
-          grep -o "MIIBCgKCAQEA[A-Za-z0-9+/=]*" TMessagesProj/jni/tgnet/Datacenter.cpp | head -1
 
       - name: Rename to RKGram
         run: |
