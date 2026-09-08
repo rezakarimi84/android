@@ -64,31 +64,6 @@ jobs:
           find . -name "ConnectionsManager.cpp" -exec sed -i 's/443/2398/g' {} \;
           find . -name "Datacenter.cpp" -exec sed -i 's/443/2398/g' {} \;
 
-      - name: Replace RSA Key
-        run: |
-          python3 - << 'PYEOF'
-          import re
-          
-          new_key = (
-              '"-----BEGIN RSA PUBLIC KEY-----\\n"\n'
-              '                                                  "MIIBCgKCAQEA24zgTxV7kxgXjKFumg65vhPHf4ehS+eR28r0wGzwQj7rAkmi6CPD\\n"\n'
-              '                                                  "QQ//zG9t5Zhw7uaYiErmHB5RRzPnmFTXKN/M1796rsQ2KzD5zFTwJ8UDYq1NWeGq\\n"\n'
-              '                                                  "/Z8LN/Gk7bzPizz7NJPbXHTKn/DHXbFxMRfKKVVDEP5YibDn8baiCOE9hrdvZ1Hu\\n"\n'
-              '                                                  "biBlGlvvthOjWrTMHhq7q0N0hGBYRjph/KxqtPpntUivx68zcPE3TZCehu7dd3VJ\\n"\n'
-              '                                                  "RiFUPBGsKtEmyaFGzu71CjFO2QY99u8MI6i5KzpiAcUOdEr5RDFckhFMGu7tJrh3\\n"\n'
-              '                                                  "Dch99GCM1rZCgd9ExK4oZyKROXhoPCy5cwIDAQAB\\n"\n'
-              '                                                  "-----END RSA PUBLIC KEY-----"'
-          )
-          
-          pattern = r'"-----BEGIN RSA PUBLIC KEY-----\\n".*?"-----END RSA PUBLIC KEY-----"'
-          
-          for f in ["TMessagesProj/jni/tgnet/Handshake.cpp", "TMessagesProj/jni/tgnet/Datacenter.cpp"]:
-              content = open(f).read()
-              new_content = re.sub(pattern, new_key, content, flags=re.DOTALL)
-              open(f, 'w').write(new_content)
-              print(f"Done: {f}")
-          PYEOF
-
       - name: Rename to RKGram
         run: |
           find . -name "strings.xml" | xargs sed -i 's/Novagram/RKGram/g'
