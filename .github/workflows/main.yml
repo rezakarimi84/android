@@ -109,7 +109,7 @@ jobs:
       - name: Build APK
         run: |
           chmod +x gradlew
-          ./gradlew :TMessagesProj_App:assembleAfatDebug --no-daemon -x lint --stacktrace 2>&1 | tail -80
+          ./gradlew :TMessagesProj_App:assembleAfatDebug --no-daemon -x lint 2>&1 | grep -A5 "error:"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
