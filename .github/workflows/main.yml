@@ -66,10 +66,10 @@ jobs:
 
       - name: Replace RSA Key
         run: |
-          python3 - << 'EOF'
+          python3 - << 'PYEOF'
           import re
-
-          new_key_formatted = (
+          
+          new_key = (
               '"-----BEGIN RSA PUBLIC KEY-----\\n"\n'
               '                                                  "MIIBCgKCAQEA24zgTxV7kxgXjKFumg65vhPHf4ehS+eR28r0wGzwQj7rAkmi6CPD\\n"\n'
               '                                                  "QQ//zG9t5Zhw7uaYiErmHB5RRzPnmFTXKN/M1796rsQ2KzD5zFTwJ8UDYq1NWeGq\\n"\n'
@@ -79,25 +79,15 @@ jobs:
               '                                                  "Dch99GCM1rZCgd9ExK4oZyKROXhoPCy5cwIDAQAB\\n"\n'
               '                                                  "-----END RSA PUBLIC KEY-----"'
           )
-
-          files = [
-              "TMessagesProj/jni/tgnet/Handshake.cpp",
-              "TMessagesProj/jni/tgnet/Datacenter.cpp"
-          ]
-
-          for f in files:
-              with open(f, 'r') as file:
-                  content = file.read()
-              new_content = re.sub(
-                  r'"-----BEGIN RSA PUBLIC KEY-----\\n".*?"-----END RSA PUBLIC KEY-----"',
-                  new_key_formatted,
-                  content,
-                  flags=re.DOTALL
-              )
-              with open(f, 'w') as file:
-                  file.write(new_content)
-              print(f"✅ Key replaced in: {f}")
-          EOF
+          
+          pattern = r'"-----BEGIN RSA PUBLIC KEY-----\\n".*?"-----END RSA PUBLIC KEY-----"'
+          
+          for f in ["TMessagesProj/jni/tgnet/Handshake.cpp", "TMessagesProj/jni/tgnet/Datacenter.cpp"]:
+              content = open(f).read()
+              new_content = re.sub(pattern, new_key, content, flags=re.DOTALL)
+              open(f, 'w').write(new_content)
+              print(f"Done: {f}")
+          PYEOF
 
       - name: Rename to RKGram
         run: |
