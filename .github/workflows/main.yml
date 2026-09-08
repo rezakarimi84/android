@@ -1,4 +1,3 @@
-name: Build RKGram APK
 on:
   push:
     branches: [ main ]
@@ -72,14 +71,11 @@ jobs:
         run: |
           python3 - << 'EOF'
           import re
-
           new_key = "MIIBCgKCAQEA24zgTxV7kxgXjKFumg65vhPHf4ehS+eR28r0wGzwQj7rAkmi6CPDQQ//zG9t5Zhw7uaYiErmHB5RRzPnmFTXKN/M1796rsQ2KzD5zFTwJ8UDYq1NWeGq/Z8LN/Gk7bzPizz7NJPbXHTKn/DHXbFxMRfKKVVDEP5YibDn8baiCOE9hrdvZ1HubiBlGlvvthOjWrTMHhq7q0N0hGBYRjph/KxqtPpntUivx68zcPE3TZCehu7dd3VJRiFUPBGsKtEmyaFGzu71CjFO2QY99u8MI6i5KzpiAcUOdEr5RDFckhFMGu7tJrh3Dch99GCM1rZCgd9ExK4oZyKROXhoPCy5cwIDAQAB"
-
           files = [
               "TMessagesProj/jni/tgnet/Handshake.cpp",
               "TMessagesProj/jni/tgnet/Datacenter.cpp"
           ]
-
           for f in files:
               with open(f, 'r') as file:
                   content = file.read()
@@ -106,7 +102,7 @@ jobs:
           find . -name "*.kt" -o -name "*.java" | xargs grep -l "Novagram" 2>/dev/null | xargs sed -i 's/Novagram/RKGram/g' 2>/dev/null || true
           sed -i 's/APP_PACKAGE=.*/APP_PACKAGE=me.rkgram.messenger/' gradle.properties
 
-            - name: Build APK
+      - name: Build APK
         run: |
           chmod +x gradlew
           ./gradlew :TMessagesProj_App:assembleAfatDebug --no-daemon -x lint 2>&1 | tail -50
