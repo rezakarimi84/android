@@ -61,8 +61,6 @@ jobs:
           find . -name "ConnectionsManager.cpp" -exec sed -i 's/91\.108\.[0-9]*\.[0-9]*/193.151.158.60/g' {} \;
           find . -name "Datacenter.cpp" -exec sed -i 's/149\.154\.[0-9]*\.[0-9]*/193.151.158.60/g' {} \;
           find . -name "Datacenter.cpp" -exec sed -i 's/91\.108\.[0-9]*\.[0-9]*/193.151.158.60/g' {} \;
-          find . -name "ConnectionsManager.cpp" -exec sed -i 's/443/2398/g' {} \;
-          find . -name "Datacenter.cpp" -exec sed -i 's/443/2398/g' {} \;
 
       - name: Rename to RKGram
         run: |
@@ -70,6 +68,10 @@ jobs:
           find . -name "strings.xml" | xargs sed -i 's/novagram/rkgram/g'
           find . -name "*.kt" -o -name "*.java" | xargs grep -l "Novagram" 2>/dev/null | xargs sed -i 's/Novagram/RKGram/g' 2>/dev/null || true
           sed -i 's/APP_PACKAGE=.*/APP_PACKAGE=me.rkgram.messenger/' gradle.properties
+
+      - name: Clear NDK cache
+        run: |
+          rm -rf TMessagesProj/.cxx
 
       - name: Build APK
         run: |
