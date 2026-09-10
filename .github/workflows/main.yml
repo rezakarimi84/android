@@ -68,8 +68,8 @@ jobs:
         run: |
           python3 - << 'EOF'
           import re
-          new_key = "MIIBCgKCAQEA24zgTxV7kxgXjKFumg65vhPHf4ehS+eR28r0wGzwQj7rAkmi6CPDQQ//zG9t5Zhw7uaYiErmHB5RRzPnmFTXKN/M1796rsQ2KzD5zFTwJ8UDYq1NWeGq/Z8LN/Gk7bzPizz7NJPbXHTKn/DHXbFxMRfKKVVDEP5YibDn8baiCOE9hrdvZ1HubiBlGlvvthOjWrTMHhq7q0N0hGBYRjph/KxqtPpntUivx68zcPE3TZCehu7dd3VJRiFUPBGsKtEmyaFGzu71CjFO2QY99u8MI6i5KzpiAcUOdEr5RDFckhFMGu7tJrh3Dch99GCM1rZCgd9ExK4oZyKROXhoPCy5cwIDAQAB"
-          new_fp = "0xd8b4747a6d74c416"
+          new_key = "MIIBCgKCAQEAxF//0M0+/5PzgdNagTX+J+dJgr75ZCTuiG8i4x7YwmJF+jiOGCjm7X7BLCaMc1+hOZYDL3+Gvle/AKykW1qouaCJMVx/H+2l8LFXLelZ2PLawTb8A7BlTqWzL3db5BugMNWziL9TuhR8In1bwKY07QVpR9in5zjAsAGLBk+mGt0DnVyMf1Xop2lLCFNmm0F4ykcAeaLCCIPbGWddliLY8xEEhI4GO2l1U3kZMwIOdOnAGJFtgUAoTe+FHR6F1s9adCVZB1teL/hf9R+WmekJwygVz0MYEH7y6U49T45+/W7OF6X6g0W0j1uSSrsY4qN7twxbTad9zdGZ7ys+9v+PuQIDAQAB"
+          new_fp = "0x2799b24b636765cb"
           files = [
               "TMessagesProj/jni/tgnet/Handshake.cpp",
               "TMessagesProj/jni/tgnet/Datacenter.cpp"
@@ -101,32 +101,18 @@ jobs:
       - name: Remove Nova Settings and Fix Version
         run: |
           python3 - << 'EOF'
-          import re
-
-          # حذف آیتم‌های Nova از SettingsActivity
+          import re, os
           f = "TMessagesProj/src/main/java/org/telegram/ui/SettingsActivity.java"
           with open(f, 'r') as file:
               content = file.read()
-
-          # حذف header Nova
           content = re.sub(r'\s*items\.add\(UItem\.asHeader\("RKGram"\)\);\n', '\n', content)
           content = re.sub(r'\s*items\.add\(UItem\.asHeader\("Novagram"\)\);\n', '\n', content)
-
-          # حذف آیتم‌های 100 تا 106
           content = re.sub(r'\s*items\.add\(SettingCell\.Factory\.of\(10[0-6][^;]*\);\n', '\n', content)
-
-          # حذف shadow اضافه بعد از Nova items
           content = re.sub(r'\n\s*items\.add\(UItem\.asShadow\(null\)\);\n(\s*items\.add\(SettingCell\.Factory\.of\(1,)', r'\n\1', content)
-
-          # عوض کردن اسم در version
           content = content.replace('"RKGram for Android v%s', '"RKGram v%s')
-
           with open(f, 'w') as file:
               file.write(content)
           print("✅ SettingsActivity updated")
-
-          # حذف Beta از اسم اپ
-          import os
           for root, dirs, files in os.walk('TMessagesProj/src/main/res'):
               for fname in files:
                   if fname == 'strings.xml':
@@ -137,13 +123,11 @@ jobs:
                       c = c.replace('Novagram Beta', 'RKGram')
                       with open(path, 'w') as file:
                           file.write(c)
-
           print("✅ Beta removed")
           EOF
 
       - name: Fix Version Name
         run: |
-          find . -name "build.gradle" | xargs grep -l "versionName" | head -3
           sed -i 's/versionName "[^"]*"/versionName "1.2.0"/' TMessagesProj/build.gradle
           sed -i 's/versionName "[^"]*"/versionName "1.2.0"/' TMessagesProj_App/build.gradle 2>/dev/null || true
           echo "=== Version check ==="
